@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiosk Display – Eleva Weather</title>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+        width: 100%; height: 100%;
+        background: #000;
+        font-family: "Segoe UI", Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .presentation-frame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 1;
+    }
+
+    .info-bar {
+        position: absolute;
+        bottom: 0;
+        height: 12%;
+        width: 100%;
+        background: rgba(25, 89, 173, .92);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+        z-index: 10;
+    }
+
+    .date-display {
+        display: flex;
+        flex-direction: column;
+        font-size: 2.4vh;
+        font-weight: 500;
+    }
+
+    .day-line { font-size: 3.5vh; font-weight: 800; }
+
+    .weather-box {
+        flex: 2;
+        text-align: center;
+    }
+
+    .weather-city {
+        font-size: 2.2vh;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .weather-temp {
+        font-size: 4.2vh;
+        font-weight: bold;
+    }
+    .weather-desc {
+        font-size: 2vh;
+        opacity: 0.9;
+    }
+
+    .time-display {
+        font-size: 5vh;
+        font-weight: 500;
+        width: 20%;
+        text-align: right;
+    }
+</style>
+</head>
+<body>
+
+<!-- AREA DE EXIBIÇÃO -->
+<iframe id="slide-frame" class="presentation-frame"></iframe>
+
+<!-- BARRA INFERIOR -->
+<div class="info-bar">
+
+    <div class="date-display">
+        <div id="day-line">Carregando...</div>
+        <div id="date-line">...</div>
+    </div>
+
+    <div class="weather-box">
+        <div id="weather-city" class="weather-city">Carregando...</div>
+        <div id="weather-temp" class="weather-temp">--°C</div>
+        <div id="weather-desc" class="weather-desc">Buscando clima...</div>
+    </div>
+
+    <div id="time" class="time-display">--:--:--</div>
+</div>
+
+<script>
+/* ======================================
+   LINKS DO DISPLAY – AGORA CORRIGIDOS
+====================================== */
+
+const displayLinks = [
+    /* GOOGLE SLIDES – MODO APRESENTAÇÃO */
+    "https://docs.google.com/presentation/d/1FheDbhEBxO2XrfUZcwylNUKPFUaVnRHbfLalwO--kfM/embed?start=true&loop=true&delayms=5000",
+
+    /* GRAFANA COM LOGIN AUTOMÁTICO */
+    "http://tv:tvtv@grafana.escolaeleva.local:3000/d/ddffnqv66f400c/status-links-geral?orgId=1&from=now-5m&to=now&timezone=browser&refresh=30s"
+];
+
+let currentDisplay = 0;
+
+/* Alterna entre os links automaticamente */
+function rotateDisplay() {
+    document.getElementById("slide-frame").src = displayLinks[currentDisplay];
+    currentDisplay = (currentDisplay + 1) % displayLinks.length;
+}
+rotateDisplay();
+setInterval(rotateDisplay, 100); // troca a cada 10s
+
+
+/* ======================================
+   RELÓGIO BRASÍLIA
+====================================== */
+
+function updateClock() {
+    const now = new Date();
+
+    const time = now.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    const weekday = now.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    const dateText = now.toLocaleDateString("pt-BR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    document.getElementById("time").innerText = time;
+    document.getElementById("day-line").innerText = weekday;
+    document.getElementById("date-line").innerText = dateText;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+
+/* ======================================
+   CLIMA – MANTIDO IGUAL, NADA FOI ALTERADO
+====================================== */
+
+const cities = [
+    { name: "Rio de Janeiro – RJ", lat: -22.9068, lon: -43.1729 },
+    { name: "Recife – PE", lat: -8.0476, lon: -34.8770 },
+    { name: "Salvador – BA", lat: -12.9777, lon: -38.5016 },
+    { name: "Brasília – DF", lat: -15.8267, lon: -47.9218 },
+    { name: "Fortaleza – CE", lat: -3.7319, lon: -38.5267 },
+    { name: "São Paulo – SP", lat: -23.5505, lon: -46.6333 },
+    { name: "Belo Horizonte – MG", lat: -19.9167, lon: -43.9345 },
+    { name: "Porto Alegre – RS", lat: -30.0346, lon: -51.2177 }
+];
+
+let cityIndex = 0;
+
+async function updateWeather() {
+    const city = cities[cityIndex];
+
+    document.getElementById("weather-city").innerText = city.name;
+
+    try {
+        const url =
+          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&timezone=America%2FSao_Paulo`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const w = data.current_weather;
+
+        document.getElementById("weather-temp").innerText = `${Math.round(w.temperature)}°C`;
+        document.getElementById("weather-desc").innerText = weatherCodeDescription(w.weathercode);
+
+    } catch {
+        document.getElementById("weather-temp").innerText = "--°C";
+        document.getElementById("weather-desc").innerText = "Falha no clima";
+    }
+
+    cityIndex = (cityIndex + 1) % cities.length;
+}
+
+function weatherCodeDescription(code) {
+    const map = {
+        0: "Céu limpo", 1: "Poucas nuvens", 2: "Parcialmente nublado", 3: "Nublado",
+        45: "Neblina", 48: "Nevoeiro", 51: "Garoa leve", 53: "Garoa", 55: "Garoa forte",
+        61: "Chuva leve", 63: "Chuva", 65: "Chuva forte", 71: "Neve leve",
+        80: "Aguaceiros", 95: "Tempestade"
+    };
+    return map[code] || "Tempo instável";
+}
+
+updateWeather();
+setInterval(updateWeather, 12000);
+
+</script>
+</body>
+</html>
