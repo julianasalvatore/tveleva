@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiosk Display – Eleva Weather</title>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+        width: 100%; height: 100%;
+        background: #000;
+        font-family: "Segoe UI", Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .presentation-frame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 1;
+    }
+
+    .info-bar {
+        position: absolute;
+        bottom: 0;
+        height: 12%;
+        width: 100%;
+        background: rgba(25, 89, 173, .92);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+        z-index: 10;
+    }
+
+    .date-display {
+        display: flex;
+        flex-direction: column;
+        font-size: 2.4vh;
+        font-weight: 500;
+    }
+
+    .day-line { font-size: 3.5vh; font-weight: 800; }
+
+    .weather-box {
+        flex: 2;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .weather-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        width: 80%;
+        max-width: 1000px;
+        align-items: center;
+        justify-items: center;
+    }
+
+    .weather-card {
+        background: rgba(255,255,255,0.06);
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        width: 100%;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform .25s ease;
+        min-height: 6.5vh;
+    }
+
+    .weather-card:hover { transform: translateY(-4px); }
+
+    .weather-city {
+        font-size: 1.9vh;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .weather-temp {
+        font-size: 3.6vh;
+        font-weight: bold;
+        margin-top: 0.2rem;
+    }
+
+    .weather-desc {
+        font-size: 1.8vh;
+        opacity: 0.92;
+        margin-top: 0.2rem;
+    }
+
+    .time-display {
+        font-size: 5vh;
+        font-weight: 500;
+        width: 20%;
+        text-align: right;
+    }
+</style>
+</head>
+<body>
+
+<!-- ÁREA DE EXIBIÇÃO -->
+<iframe id="slide-frame" class="presentation-frame" allow="autoplay; fullscreen"></iframe>
+
+<!-- BARRA INFERIOR -->
+<div class="info-bar">
+
+    <div class="date-display">
+        <div id="day-line">Carregando...</div>
+        <div id="date-line">...</div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="weather-box">
+        <div id="weather-grid" class="weather-grid" aria-live="polite">
+            <div class="weather-card"><div class="weather-city">Carregando...</div></div>
+            <div class="weather-card"><div class="weather-city">Carregando...</div></div>
+            <div class="weather-card"><div class="weather-city">Carregando...</div></div>
+        </div>
+    </div>
+
+    <div id="time" class="time-display">--:--:--</div>
+</div>
+
+<script>
+/* ======================================
+   LINKS DO DISPLAY
+====================================== */
+
+// 📌 TODOS OS LINKS CORRIGIDOS E PRONTOS
+const displayLinks = [
+    "https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&delayms=30000",
+    "https://www.canva.com/design/DAG6c1Cu68I/ec9EYmFSSv50HX3EpVEATQ/view?embed",
+    "https://app.powerbi.com/reportEmbed?reportId=73cb7467-2d93-44a1-b03f-a87142ee528f&autoAuth=true&ctid=58ef132f-ab97-4699-b1d2-d5b285391d13"
+];
+
+let currentDisplay = 0;
+
+function rotateDisplay() {
+    document.getElementById("slide-frame").src = displayLinks[currentDisplay];
+    currentDisplay = (currentDisplay + 1) % displayLinks.length;
+}
+
+rotateDisplay();
+setInterval(rotateDisplay, 30000); // troca cada 30s
+
+
+/* ======================================
+   RELÓGIO E DATA (BRASÍLIA)
+====================================== */
+
+function updateClock() {
+    const now = new Date();
+
+    const time = now.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    const weekday = now.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    const dateText = now.toLocaleDateString("pt-BR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "America/Sao_Paulo"
+    });
+
+    document.getElementById("time").innerText = time;
+    document.getElementById("day-line").innerText = weekday;
+    document.getElementById("date-line").innerText = dateText;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+
+/* ======================================
+   PREVISÃO DO TEMPO – CARROSSEL 3x3
+====================================== */
+
+const cities = [
+    { name: "Rio de Janeiro – RJ", lat: -22.9068, lon: -43.1729 },
+    { name: "Recife – PE", lat: -8.0476, lon: -34.8770 },
+    { name: "Salvador – BA", lat: -12.9777, lon: -38.5016 },
+    { name: "Brasília – DF", lat: -15.8267, lon: -47.9218 },
+    { name: "São Paulo – SP", lat: -23.5505, lon: -46.6333 },
+    { name: "Vila Velha – ES", lat: -20.3478, lon: -40.2949 }
+];
+
+function weatherCodeDescription(code) {
+    const map = {
+        0: "Céu limpo", 1: "Poucas nuvens", 2: "Parcialmente nublado", 3: "Nublado",
+        45: "Neblina", 48: "Nevoeiro", 51: "Garoa leve", 53: "Garoa", 55: "Garoa forte",
+        61: "Chuva leve", 63: "Chuva", 65: "Chuva forte",
+        80: "Aguaceiros", 95: "Tempestade"
+    };
+    return map[code] || "Instável";
+}
+
+let weatherData = new Array(cities.length).fill(null);
+
+async function fetchAllWeather() {
+    const promises = cities.map(async (c, idx) => {
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current_weather=true&timezone=America%2FSao_Paulo`;
+            const resp = await fetch(url);
+            const json = await resp.json();
+            if (json && json.current_weather) {
+                return {
+                    name: c.name,
+                    temp: Math.round(json.current_weather.temperature),
+                    code: json.current_weather.weathercode
+                };
+            }
+        } catch {}
+        return { name: c.name, temp: null, code: null };
+    });
+
+    weatherData = await Promise.all(promises);
+}
+
+function renderGroup(startIndex) {
+    const grid = document.getElementById("weather-grid");
+    grid.innerHTML = "";
+
+    for (let i = 0; i < 3; i++) {
+        const idx = (startIndex + i) % cities.length;
+        const d = weatherData[idx];
+
+        const card = document.createElement("div");
+        card.className = "weather-card";
+
+        card.innerHTML = `
+            <div class="weather-city">${d.name}</div>
+            <div class="weather-temp">${d.temp !== null ? d.temp + "°C" : "--°C"}</div>
+            <div class="weather-desc">${d.code !== null ? weatherCodeDescription(d.code) : "Carregando..."}</div>
+        `;
+
+        grid.appendChild(card);
+    }
+}
+
+let groupStart = 0;
+
+(async function initWeatherCycle(){
+    await fetchAllWeather();
+    renderGroup(groupStart);
+
+    setInterval(fetchAllWeather, 60000);
+
+    setInterval(() => {
+        groupStart = (groupStart + 3) % cities.length;
+        renderGroup(groupStart);
+    }, 12000);
+})();
+</script>
+
+</body>
+</html>
