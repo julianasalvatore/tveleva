@@ -37,7 +37,7 @@
         min-height: 90px;
         z-index: 999; /* Garante que fique SOBRE o slide */
         
-        background-color: #122469; /* Azul Escuro Batutinhas */
+        background-color: #5aa2f4; /* Azul Inspired */
         color: #fff;
         
         display: flex;
@@ -54,7 +54,7 @@
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #122469; 
+        background-color: #5aa2f4; 
         padding-right: 20px;
         z-index: 1000;
     }
@@ -141,7 +141,7 @@
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #122469; 
+        background-color: #5aa2f4; 
         padding-left: 20px;
         z-index: 1000;
     }
@@ -210,7 +210,7 @@
         
         <div class="left-group">
             <div class="logo-box">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxbpKAoTmq6aaDqjovOZQQw8VKnS5oEhOLzw&s" alt="Logo Eleva">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzUF04gyhKRF6F6I68BdsLL67tgOGdqFyw7w&s" alt="Logo Eleva">
             </div>
             <div class="vertical-divider"></div>
             <div class="date-display">
@@ -232,7 +232,8 @@
                 </div>
                 <div class="weather-text">
                     <div class="weather-temp" id="weather-temp">--°C</div>
-                    <div class="weather-city">Vitória – ES</div> </div>
+                    <div class="weather-city">Rio de Janeiro – RJ</div>
+                </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="time-display" id="time-container">
@@ -246,8 +247,9 @@
         // ==========================================
         // CONFIGURAÇÕES GERAIS
         // ==========================================
-        const SHEET_ID = '1SPhDGL0LrZbjxDlOiTlniIOVCIREVv2z'; 
-        const TEMPO_ROLAGEM = 50; 
+        // ID ATUALIZADO DO GOOGLE SHEETS
+        const SHEET_ID = '1qH6EoxNsfsu-qUE8ZCrHgPH8xxDxSukD'; 
+        const TEMPO_ROLAGEM = 35; // Segundos para a notícia atravessar a tela
         
         // ==========================================
         // 1. SLIDES (Google Presentation)
@@ -257,7 +259,8 @@
             return urlParams.get(param) || defaultValue;
         }
 
-        const defaultSlideUrl = "https://docs.google.com/presentation/d/1Unm4ICUbkwN4bnzCnDRsuK2Vx1mX7E7d/embed?start=true&loop=true&rm=minimal&delayms=10000";
+        // URL DE EMBED ATUALIZADA
+        const defaultSlideUrl = "https://docs.google.com/presentation/d/1xG5VEEJ5U5IIB-ARnipSRxEhh4_pUjFj/embed?start=true&loop=true&rm=minimal&delayms=10000";
         const slideUrl = getQueryParam('embed', defaultSlideUrl);
         const refreshInterval = parseInt(getQueryParam('refresh', '3600000'), 10);
 
@@ -268,6 +271,7 @@
         // 2. RELÓGIO & DATA (Brasília)
         // ==========================================
         function formatDiaSemana(diaBruto){
+            // Capitaliza o dia (ex: quinta-feira -> Quinta-Feira)
             return diaBruto.toLowerCase().split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-');
         }
 
@@ -275,13 +279,16 @@
             const now = new Date();
             const TIMEZONE = 'America/Sao_Paulo';
             
+            // Dia da semana
             let rawDay = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: TIMEZONE }).format(now);
             const dayFormatted = formatDiaSemana(rawDay);
             
+            // Data completa
             const dateRest = new Intl.DateTimeFormat('pt-BR', { 
                 day: 'numeric', month: 'long', year: 'numeric', timeZone: TIMEZONE 
             }).format(now);
             
+            // Hora
             const timeString = now.toLocaleTimeString('pt-BR', {
                 hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIMEZONE
             });
@@ -295,12 +302,11 @@
 
 
         // ==========================================
-        // 3. CLIMA (OpenWeather - VITÓRIA, ES)
+        // 3. CLIMA (OpenWeather - Rio de Janeiro)
         // ==========================================
         async function fetchWeather() {
             const apiKey = "ff0a9d4e6f632ea18d6ce175c676d736"; 
-            // URL atualizada para Vitoria, BR
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=Vitoria,BR&appid=${apiKey}&units=metric&lang=pt_br`;
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=Rio de Janeiro&appid=${apiKey}&units=metric&lang=pt_br`;
 
             try {
                 const response = await fetch(url);
@@ -330,14 +336,18 @@
 
         async function fetchNews() {
             try {
+                // Timestamp para evitar cache
                 const response = await fetch(`${SHEET_URL}&t=${Date.now()}`);
                 const text = await response.text();
                 
+                // Processamento CSV básico
                 const lines = text.split('\n');
                 const newsItems = [];
 
+                // Pula a primeira linha (cabeçalho)
                 for(let i = 1; i < lines.length; i++) {
                     let line = lines[i].trim();
+                    // Remove aspas de CSV
                     if(line.startsWith('"') && line.endsWith('"')) line = line.substring(1, line.length - 1);
                     line = line.replace(/""/g, '"');
                     
@@ -346,13 +356,18 @@
 
                 if(newsItems.length === 0) newsItems.push("Bem-vindo à Os Batutinhas News");
 
+                // Junta as notícias com o separador
                 const newContentHtml = newsItems.join('<span class="separator">|</span>');
 
+                // Só atualiza o DOM se houver mudança real no texto
                 if (newContentHtml !== lastContentSignature) {
                     lastContentSignature = newContentHtml;
+                    
                     marqueeElement.innerHTML = newContentHtml;
+                    
+                    // Reinicia animação CSS
                     marqueeElement.style.animation = 'none';
-                    marqueeElement.offsetHeight; 
+                    marqueeElement.offsetHeight; /* Trigger reflow */
                     marqueeElement.style.animation = `scrollLeft ${TEMPO_ROLAGEM}s linear infinite`;
                 }
 
@@ -362,18 +377,20 @@
         }
         
         fetchNews();
-        setInterval(fetchNews, 4000); 
+        setInterval(fetchNews, 4000); // Verifica Google Sheets a cada 4 segundos
 
 
         // ==========================================
         // 5. REFRESH DE SEGURANÇA
         // ==========================================
+        // Soft refresh do iframe (mantém a página viva)
         setInterval(() => {
             console.log("Atualizando slide...");
             const currentSrc = document.getElementById('slide-frame').src;
             document.getElementById('slide-frame').src = currentSrc;
         }, refreshInterval);
 
+        // Hard refresh da página (1x ao dia para limpar memória)
         setTimeout(() => {
             window.location.reload(true);
         }, 86400000); // 24h
@@ -384,15 +401,18 @@
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
             elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { 
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
             elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { 
+        } else if (elem.msRequestFullscreen) { /* IE/Edge antigo */
             elem.msRequestFullscreen();
         }
     }
 
+    // TENTA ENTRAR EM FULLSCREEN SOZINHO AO CARREGAR
     window.addEventListener("load", () => {
         openFullScreen();
+
+        // Algumas TVs bloqueiam fullscreen automático — tenta de novo após 2s
         setTimeout(openFullScreen, 2000);
     });
     </script>
