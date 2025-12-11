@@ -16,10 +16,7 @@
         overflow: hidden; 
     }
 
-    /* 1. IFRAME (SLIDES) 
-       - Configurado para ocupar 100% da largura e altura.
-       - Isso garante que a proporção 16:9 preencha a TV sem bordas pretas.
-    */
+    /* 1. IFRAME (SLIDES) */
     .presentation-frame {
         position: absolute;
         top: 0;
@@ -30,10 +27,7 @@
         z-index: 1; /* Fica no fundo */
     }
 
-    /* 2. BARRA DE INFORMAÇÕES (OVERLAY) 
-       - Fica fixa no rodapé.
-       - Z-Index maior para flutuar SOBRE o slide.
-    */
+    /* 2. BARRA DE INFORMAÇÕES (OVERLAY) */
     .info-bar {
         position: absolute;
         bottom: 0;
@@ -51,7 +45,6 @@
         justify-content: space-between;
         padding: 0 2rem;
         
-        /* Sombra forte para separar visualmente do vídeo/slide atrás */
         box-shadow: 0 -4px 20px rgba(0,0,0,0.4); 
     }
 
@@ -61,7 +54,6 @@
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        /* Fundo laranja sólido atrás do logo para garantir leitura se o slide for colorido */
         background-color: #ff8e03; 
         padding-right: 20px;
         z-index: 1000;
@@ -122,7 +114,6 @@
         overflow: hidden;
         display: flex;
         align-items: center;
-        /* Máscara para suavizar o texto entrando e saindo */
         mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
     }
@@ -164,7 +155,6 @@
     .weather-icon-box img {
         width: 42px;
         height: 42px;
-        /* Filtro para tornar ícone branco */
         filter: brightness(0) invert(1) drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
         margin-right: 10px;
     }
@@ -191,7 +181,7 @@
         color: #fff;
         font-size: 5vh;
         font-weight: 700;
-        font-variant-numeric: tabular-nums; /* Evita que os números pulem */
+        font-variant-numeric: tabular-nums;
         line-height: 1;
         margin-left: 20px;
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
@@ -242,8 +232,7 @@
                 </div>
                 <div class="weather-text">
                     <div class="weather-temp" id="weather-temp">--°C</div>
-                    <div class="weather-city">Rio de Janeiro – RJ</div>
-                </div>
+                    <div class="weather-city">Brasília – DF</div> </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="time-display" id="time-container">
@@ -257,8 +246,9 @@
         // ==========================================
         // CONFIGURAÇÕES GERAIS
         // ==========================================
-        const SHEET_ID = '1CZ0NkBomU3prL1EmSk_baavwJRQySmjzRTf0HdLPMvo'; 
-        const TEMPO_ROLAGEM = 35; // Segundos para a notícia atravessar a tela
+        
+        const SHEET_ID = '1g-zyLDL2U9-UlIJnbyVMx9Rj17L2EWFW'; 
+        const TEMPO_ROLAGEM = 35; 
         
         // ==========================================
         // 1. SLIDES (Google Presentation)
@@ -268,7 +258,7 @@
             return urlParams.get(param) || defaultValue;
         }
 
-        const defaultSlideUrl = "https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=10000";
+        const defaultSlideUrl = "https://docs.google.com/presentation/d/1yPmrNcZL4AkZp3oyHu3NynFGrY0B9_Iv/embed?start=true&loop=true&rm=minimal&delayms=10000";
         const slideUrl = getQueryParam('embed', defaultSlideUrl);
         const refreshInterval = parseInt(getQueryParam('refresh', '3600000'), 10);
 
@@ -279,7 +269,6 @@
         // 2. RELÓGIO & DATA (Brasília)
         // ==========================================
         function formatDiaSemana(diaBruto){
-            // Capitaliza o dia (ex: quinta-feira -> Quinta-Feira)
             return diaBruto.toLowerCase().split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-');
         }
 
@@ -287,16 +276,13 @@
             const now = new Date();
             const TIMEZONE = 'America/Sao_Paulo';
             
-            // Dia da semana
             let rawDay = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: TIMEZONE }).format(now);
             const dayFormatted = formatDiaSemana(rawDay);
             
-            // Data completa
             const dateRest = new Intl.DateTimeFormat('pt-BR', { 
                 day: 'numeric', month: 'long', year: 'numeric', timeZone: TIMEZONE 
             }).format(now);
             
-            // Hora
             const timeString = now.toLocaleTimeString('pt-BR', {
                 hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIMEZONE
             });
@@ -310,12 +296,12 @@
 
 
         // ==========================================
-        // 3. CLIMA (OpenWeather - Rio de Janeiro)
+        // 3. CLIMA (OpenWeather - BRASÍLIA, DF)
         // ==========================================
         async function fetchWeather() {
-            // API Key padrão para demonstração, ideal usar a sua própria em produção se possível
             const apiKey = "ff0a9d4e6f632ea18d6ce175c676d736"; 
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=Rio de Janeiro&appid=${apiKey}&units=metric&lang=pt_br`;
+            // URL ATUALIZADA PARA BRASÍLIA
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=Brasilia,BR&appid=${apiKey}&units=metric&lang=pt_br`;
 
             try {
                 const response = await fetch(url);
@@ -326,6 +312,7 @@
                 const iconCode = data.weather[0].icon;
                 
                 document.getElementById('weather-temp').textContent = `${temp}°C`;
+                document.querySelector('.weather-city').textContent = "Brasília – DF"; // Garante texto correto
                 document.getElementById('weather-icon-img').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
                 
             } catch (error) {
@@ -333,7 +320,7 @@
             }
         }
         fetchWeather();
-        setInterval(fetchWeather, 1000); // Atualiza a cada 1 min
+        setInterval(fetchWeather, 1000); // 1 min
 
 
         // ==========================================
@@ -345,18 +332,14 @@
 
         async function fetchNews() {
             try {
-                // Timestamp para evitar cache
                 const response = await fetch(`${SHEET_URL}&t=${Date.now()}`);
                 const text = await response.text();
                 
-                // Processamento CSV básico
                 const lines = text.split('\n');
                 const newsItems = [];
 
-                // Pula a primeira linha (cabeçalho)
                 for(let i = 1; i < lines.length; i++) {
                     let line = lines[i].trim();
-                    // Remove aspas de CSV
                     if(line.startsWith('"') && line.endsWith('"')) line = line.substring(1, line.length - 1);
                     line = line.replace(/""/g, '"');
                     
@@ -365,18 +348,13 @@
 
                 if(newsItems.length === 0) newsItems.push("Bem-vindo à Escola Eleva");
 
-                // Junta as notícias com o separador
                 const newContentHtml = newsItems.join('<span class="separator">|</span>');
 
-                // Só atualiza o DOM se houver mudança real no texto
                 if (newContentHtml !== lastContentSignature) {
                     lastContentSignature = newContentHtml;
-                    
                     marqueeElement.innerHTML = newContentHtml;
-                    
-                    // Reinicia animação CSS
                     marqueeElement.style.animation = 'none';
-                    marqueeElement.offsetHeight; /* Trigger reflow */
+                    marqueeElement.offsetHeight; 
                     marqueeElement.style.animation = `scrollLeft ${TEMPO_ROLAGEM}s linear infinite`;
                 }
 
@@ -386,45 +364,40 @@
         }
         
         fetchNews();
-        setInterval(fetchNews, 4000); // Verifica Google Sheets a cada 4 segundos
+        setInterval(fetchNews, 4000); 
 
 
         // ==========================================
         // 5. REFRESH DE SEGURANÇA
         // ==========================================
-        // Soft refresh do iframe (mantém a página viva)
         setInterval(() => {
             console.log("Atualizando slide...");
             const currentSrc = document.getElementById('slide-frame').src;
             document.getElementById('slide-frame').src = currentSrc;
         }, refreshInterval);
 
-        // Hard refresh da página (1x ao dia para limpar memória)
         setTimeout(() => {
             window.location.reload(true);
         }, 86400000); // 24h
 
     </script>
     <script>
-function openFullScreen() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-    } else if (elem.webkitRequestFullscreen) { /* Safari */
-        elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) { /* IE/Edge antigo */
-        elem.msRequestFullscreen();
+    function openFullScreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { 
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { 
+            elem.msRequestFullscreen();
+        }
     }
-}
 
-// TENTA ENTRAR EM FULLSCREEN SOZINHO AO CARREGAR
-window.addEventListener("load", () => {
-    openFullScreen();
-
-    // Algumas TVs bloqueiam fullscreen automático — tenta de novo após 2s
-    setTimeout(openFullScreen, 2000);
-});
-</script>
+    window.addEventListener("load", () => {
+        openFullScreen();
+        setTimeout(openFullScreen, 2000);
+    });
+    </script>
 
 </body>
 </html>
