@@ -1,335 +1,286 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiosk Presentation Display - BR</title>
-    <style>
-        /* Reset and Base Styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Eleva Informações - Atualização Rápida</title>
+<style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #000; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000;
-        }
+    /* IFRAME (apresentação) */
+    .presentation-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        z-index: 1;
+    }
 
-        /* 1. The Presentation Layer */
-        .presentation-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 1;
-        }
+    /* BARRA LARANJA */
+    .info-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 13%; 
+        min-height: 80px;
+        z-index: 20;
+        background-color: #ff8e03; 
+        display: flex;
+        align-items: center;
+        justify-content: space-between; 
+        padding: 0 2rem;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.35);
+    }
 
-        /* 2. The Overlay Bar */
-        .info-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 10%;
-            z-index: 10;
-            
-            /* COR AZUL ESCURO */
-            background-color: rgba(18, 55, 107, 0.9); 
-            color: #e0e0e0;
-            
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
-        }
+    /* ESQUERDA (Logo | Data) */
+    .left-group { display: flex; align-items: center; height: 100%; flex: 0 0 auto; z-index: 25; background-color: #ff8e03; }
 
-        /* --- DATE SETTINGS (LEFT) --- */
-        .date-display {
-            flex: 1;
-            text-align: left;
-            font-family: "Segoe UI", sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-width: 150px; 
-        }
-        
-        .day-line {
-            font-size: 3.5vh;
-            font-weight: 800;
-            line-height: 1.1;
-        }
+    .logo-box {
+        background: #ffffff;
+        border-radius: 12px;
+        height: 70%; 
+        aspect-ratio: 1 / 1; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        margin-right: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        .date-line {
-            font-size: 2.5vh;
-            font-weight: 400;
-            opacity: 0.9;
-        }
+    .vertical-divider { width: 1px; height: 60%; background-color: rgba(255,255,255,0.4); margin-right: 20px; }
 
-        /* --- CENTER WIDGET (3x Weather) --- */
-        .center-widget {
-            flex: 4; 
-            display: grid;
-            /* GRID com 3 colunas de tamanho igual */
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 1rem; 
-            align-items: center;
-            height: 100%;
-            padding: 0 1rem;
-        }
+    .date-display { display: flex; flex-direction: column; justify-content: center; color: #fff; padding-right: 15px;}
+    .day-line { font-size: 3.5vh; font-weight: 800; line-height: 1.1; text-transform: capitalize; }
+    .date-line { font-size: 2vh; font-weight: 400; opacity: 0.9; }
 
-        .weather-info {
-            text-align: center;
-            font-family: "Segoe UI", sans-serif;
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            padding: 0 5px;
-        }
-        
-        .weather-city {
-            font-size: 2.2vh;
-            font-weight: 600;
-            line-height: 1.2;
-            overflow: hidden; 
-            text-overflow: ellipsis;
-        }
+    /* ===========================
+       CENTRO (LETREIRO)
+       =========================== */
+    .marquee-container {
+        flex: 1; 
+        height: 100%;
+        overflow: hidden; 
+        position: relative;
+        display: flex;
+        align-items: center;
+        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    }
 
-        .weather-temp {
-            font-size: 3.5vh; 
-            font-weight: bold;
-            line-height: 1;
-        }
+    .marquee-content {
+        position: absolute;
+        white-space: nowrap; 
+        will-change: transform;
+        color: #fff;
+        font-size: 3.2vh; 
+        font-weight: 600;
+        /* Animação controlada via JS */
+    }
 
-        .weather-condition {
-            font-size: 1.8vh; 
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            opacity: 0.8;
-            overflow: hidden; 
-            text-overflow: ellipsis;
-        }
+    /* Separador | */
+    .separator {
+        color: rgba(255,255,255,0.6);
+        margin: 0 25px; 
+        font-weight: 300;
+        font-size: 0.8em;
+    }
 
-        /* Ocultar o QR/Música */
-        .qr-container {
-             display: none !important;
-        }
+    /* DIREITA (Clima | Hora) */
+    .right-group { display: flex; align-items: center; height: 100%; flex: 0 0 auto; z-index: 25; background-color: #ff8e03; padding-left: 15px; }
 
-        /* --- TIME SETTINGS (RIGHT) --- */
-        .time-display {
-            flex: 1;
-            text-align: right;
-            font-family: "Segoe UI", sans-serif; 
-            font-size: 5vh;
-            font-weight: 500;
-            font-variant-numeric: tabular-nums;
-            line-height: 1;
-            color: #e0e0e0; 
-            min-width: 150px;
-        }
+    .weather-container { display: flex; align-items: center; margin-right: 20px; }
+    .weather-icon-box { background: transparent; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+    .weather-icon-box img { width: 45px; height: 45px; filter: brightness(0) invert(1); } 
 
-    </style>
+    .weather-text { text-align: left; color: #fff; }
+    .weather-temp { font-size: 3.8vh; font-weight: 800; line-height: 1; }
+    .weather-city { font-size: 1.6vh; font-weight: 600; margin-top: 2px; opacity: 0.95; }
+
+    .time-display {
+        color: #fff;
+        font-size: 5.5vh;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        margin-left: 20px; 
+    }
+
+    @keyframes scrollLeft {
+        0% { transform: translateX(100%); } 
+        100% { transform: translateX(-100%); } 
+    }
+
+</style>
 </head>
 <body>
 
-    <iframe 
-        id="slide-frame"
-        class="presentation-frame"
-        src="" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        mozallowfullscreen="true" 
-        webkitallowfullscreen="true">
-    </iframe>
+    <iframe id="slide-frame" class="presentation-frame" src="" allowfullscreen mozallowfullscreen webkitallowfullscreen></iframe>
 
     <div class="info-bar">
-        <div class="date-display">
-            <div id="day-line" class="day-line">Carregando...</div>
-            <div id="date-line" class="date-line">...</div>
+        <div class="left-group">
+            <div class="logo-box">
+                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school10/files/2022-09/logo_escola_eleva.png" alt="Logo">
+            </div>
+            <div class="vertical-divider"></div>
+            <div class="date-display">
+                <div id="day-line" class="day-line">Carregando...</div>
+                <div id="date-line" class="date-line">...</div>
+            </div>
         </div>
-        
-        <div class="center-widget">
-            <div class="weather-info" id="city-0">
-                <div class="weather-city">Carregando...</div>
-                <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
+
+        <div class="marquee-container" id="marquee-container">
+            <div id="marquee-text" class="marquee-content">
+                Carregando Notícias...
             </div>
-             <div class="weather-info" id="city-1">
-                <div class="weather-city">Carregando...</div>
-                <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
-            </div>
-             <div class="weather-info" id="city-2">
-                <div class="weather-city">Carregando...</div>
-                <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
-            </div>
-            
-            <div class="qr-container" title="Música Desativada"></div>
         </div>
-        
-        <div class="time-display" id="time-container">
-            --:--:--
+
+        <div class="right-group">
+            <div class="weather-container">
+                <div class="weather-icon-box">
+                    <img id="weather-icon-img" src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Icone">
+                </div>
+                <div class="weather-text">
+                    <div class="weather-temp" id="weather-temp">--°C</div>
+                    <div class="weather-city">Rio de Janeiro – RJ</div>
+                </div>
+            </div>
+            <div class="vertical-divider"></div>
+            <div class="time-display" id="time-container">--:--:--</div>
         </div>
     </div>
 
-    <script>
-        // --- Configuração & URL Parsing ---
-        function getQueryParam(param, defaultValue) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param) || defaultValue;
-        }
+<script>
+    // ==========================================
+    // CONFIGURAÇÕES
+    // ==========================================
+    const TEMPO_ROLAGEM = 25; // Segundos para atravessar a tela
+    const SHEET_ID = '1CZ0NkBomU3prL1EmSk_baavwJRQySmjzRTf0HdLPMvo'; 
+    // ==========================================
 
-        // 1. Obter Configurações da URL
-        // Valor padrão usa um link de embed que inclui o seu ID
-        const defaultSlideUrl = `https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=8000`;
-        
-        // Use o parâmetro 'embed' para substituir o link (ex: link do Canva)
-        const slideUrl = getQueryParam('embed', defaultSlideUrl);
+    function getQueryParam(param, def){
+        const p = new URLSearchParams(window.location.search);
+        return p.get(param) || def;
+    }
+    const defaultSlideUrl = "https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=60000";
+    const slideUrl = getQueryParam('embed', defaultSlideUrl);
+    const refreshInterval = parseInt(getQueryParam('refresh','3600000'),10);
 
-        const refreshInterval = parseInt(getQueryParam('refresh', '300000'), 10); // Padrão 5 mins
-        const enableMusic = false; 
+    document.getElementById('slide-frame').src = slideUrl;
 
-        // 2. Inicializar Slide Iframe
-        const iframeEl = document.getElementById('slide-frame');
-        iframeEl.src = slideUrl;
+    // --- 1. CLOCK & DATE ---
+    function formatDiaSemana(diaBruto){
+        return diaBruto.toLowerCase().split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-');
+    }
+    function updateClockAndDate(){
+        const TIMEZONE = 'America/Sao_Paulo';
+        const now = new Date();
+        let rawDay = new Intl.DateTimeFormat('pt-BR',{weekday:'long',timeZone:TIMEZONE}).format(now);
+        const dayFormatted = formatDiaSemana(rawDay);
+        const dateRest = new Intl.DateTimeFormat('pt-BR',{year:'numeric', month:'long', day:'numeric', timeZone:TIMEZONE}).format(now);
+        const timeString = now.toLocaleTimeString('pt-BR',{hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:TIMEZONE});
+        document.getElementById('day-line').textContent = dayFormatted;
+        document.getElementById('date-line').textContent = dateRest;
+        document.getElementById('time-container').textContent = timeString;
+    }
+    setInterval(updateClockAndDate, 1000);
+    updateClockAndDate();
 
+    // --- 2. WEATHER (Rio) ---
+    const RIO_COORDS = { lat:-22.9068, lon:-43.1729, tz:"America/Sao_Paulo" };
+    function getWeatherIconURL(code) {
+        if (code === 0) return "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+        if (code >= 1 && code <= 3) return "https://cdn-icons-png.flaticon.com/512/1163/1163624.png";
+        if (code === 45 || code === 48) return "https://cdn-icons-png.flaticon.com/512/4151/4151022.png";
+        if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "https://cdn-icons-png.flaticon.com/512/3351/3351979.png";
+        if (code >= 95) return "https://cdn-icons-png.flaticon.com/512/1146/1146860.png";
+        return "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+    }
+    async function fetchRioWeather(){
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${RIO_COORDS.lat}&longitude=${RIO_COORDS.lon}&current_weather=true&timezone=${RIO_COORDS.tz}`;
+        try {
+            const res = await fetch(url);
+            if(!res.ok) throw new Error("API Error");
+            const data = await res.json();
+            const w = data.current_weather;
+            document.getElementById('weather-temp').textContent = Math.round(w.temperature) + "°C";
+            document.getElementById('weather-icon-img').src = getWeatherIconURL(w.weathercode);
+        } catch(err){ console.error("Erro clima:", err); }
+    }
+    fetchRioWeather();
+    setInterval(fetchRioWeather, 600000); 
 
-        // --- Lista de Cidades para Rotação ---
-        const CITIES = [
-            { name: "Rio de Janeiro – RJ", lat: -22.9068, lon: -43.1729, tz: "America/Sao_Paulo" },
-            { name: "Recife – PE", lat: -8.0476, lon: -34.8770, tz: "America/Recife" },
-            { name: "Salvador – BA", lat: -12.9777, lon: -38.5016, tz: "America/Bahia" },
-            { name: "Brasília – DF", lat: -15.8267, lon: -47.9218, tz: "America/Sao_Paulo" }, 
-            { name: "São Paulo – SP", lat: -23.5505, lon: -46.6333, tz: "America/Sao_Paulo" },
-            { name: "Vila Velha – ES", lat: -20.3478, lon: -40.2949, tz: "America/Sao_Paulo" }
-        ];
-        let currentCityStartIndex = 0; 
-        const ROTATION_INTERVAL = 12000; // Troca o grupo de 3 cidades a cada 12 segundos
+    // --- 3. GOOGLE SHEETS NEWS (Smart Refresh) ---
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+    const marqueeElement = document.getElementById('marquee-text');
+    let lastFetchedContent = ""; // Armazena o último conteúdo para comparar
 
-        // --- Clock Logic (Hora de Brasília) ---
-        function updateClock() {
-            const TIMEZONE = 'America/Sao_Paulo';
-            const now = new Date();
+    async function fetchNews() {
+        try {
+            // Adiciona um timestamp para evitar cache do navegador e forçar nova leitura
+            const noCacheUrl = `${SHEET_URL}&t=${new Date().getTime()}`;
             
-            const dayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: TIMEZONE }).format(now);
-            const dateRest = new Intl.DateTimeFormat('pt-BR', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                timeZone: TIMEZONE 
-            }).format(now);
-            const timeString = now.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false, 
-                timeZone: TIMEZONE
-            });
+            const response = await fetch(noCacheUrl);
+            const text = await response.text();
+            
+            const lines = text.split('\n');
+            const newsItems = [];
 
-            document.getElementById('day-line').textContent = dayName;
-            document.getElementById('date-line').textContent = dateRest;
-            document.getElementById('time-container').textContent = timeString;
-        }
-
-        // --- Weather Function (Open-Meteo) ---
-        // Funções auxiliares para preencher o HTML
-        function updateWeatherUI(index, city, temp, desc) {
-            const container = document.getElementById(`city-${index}`);
-            if (container) {
-                container.querySelector('.weather-city').textContent = city;
-                container.querySelector('.weather-temp').textContent = temp;
-                container.querySelector('.weather-condition').textContent = desc;
+            for(let i = 1; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if(line.startsWith('"') && line.endsWith('"')) line = line.substring(1, line.length - 1);
+                line = line.replace(/""/g, '"');
+                if(line.length > 0) newsItems.push(line);
             }
-        }
-        
-        // Mapeamento de códigos de clima (WMO Weather Codes)
-        const weatherCodeMap = {
-            0: "Céu Limpo", 1: "Principalmente Limpo", 2: "Parcialmente Nublado", 3: "Nublado",
-            45: "Nevoeiro", 48: "Nevoeiro com Gelo",
-            51: "Chuvisco Leve", 53: "Chuvisco Moderado", 55: "Chuvisco Denso",
-            61: "Chuva Leve", 63: "Chuva Moderada", 65: "Chuva Forte",
-            80: "Pancadas de Chuva Leves", 81: "Pancadas de Chuva Moderadas", 82: "Pancadas de Chuva Violentas",
-            95: "Tempestade", 96: "Tempestade com Granizo", 99: "Tempestade com Granizo Forte",
-            999: "Dados indisponíveis"
-        };
 
-        async function fetchAndUpdateCity(city, uiIndex) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&forecast_days=1&timezone=${city.tz}`;
-            
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                
-                const weather = data.current_weather;
-                
-                const tempC = weather.temperature;
-                const tempText = `${Math.round(tempC)}°C`;
-                const descText = weatherCodeMap[weather.weathercode] || "Dados indisponíveis";
+            // Se a planilha estiver vazia, usa fallback
+            if(newsItems.length === 0) newsItems.push("Bem-vindo à Escola Eleva");
 
-                updateWeatherUI(uiIndex, city.name, tempText, descText);
+            // Cria a string única para comparação
+            // Usamos um caractere especial improvável de ser digitado para junção limpa na comparação
+            const newContentString = newsItems.join("###SEP###");
 
-            } catch (error) {
-                console.error(`Falha ao buscar o clima para ${city.name}:`, error);
-                updateWeatherUI(uiIndex, city.name, '--°C', 'Erro de API/Rede');
+            // SÓ ATUALIZA SE O CONTEÚDO MUDOU
+            if (newContentString !== lastFetchedContent) {
+                console.log("Notícias atualizadas!");
+                lastFetchedContent = newContentString;
+                updateMarquee(newsItems);
             }
+
+        } catch (error) {
+            console.error("Erro planilha:", error);
         }
-        
-        // --- Lógica de Rotação de 3 Cidades ---
-        function rotateWeather() {
-            // As três cidades atuais a serem exibidas
-            const citiesToShow = [
-                CITIES[currentCityStartIndex % CITIES.length],
-                CITIES[(currentCityStartIndex + 1) % CITIES.length],
-                CITIES[(currentCityStartIndex + 2) % CITIES.length]
-            ];
-            
-            // Buscar e atualizar as 3 cidades
-            citiesToShow.forEach((city, index) => {
-                // Rotação só deve ocorrer se houver mais de 3 cidades.
-                if (city) {
-                    fetchAndUpdateCity(city, index);
-                }
-            });
-            
-            // Incrementa o índice inicial para o próximo grupo de 3
-            currentCityStartIndex = (currentCityStartIndex + 3) % CITIES.length;
-        }
+    }
 
+    function updateMarquee(items) {
+        const separatorHtml = '<span class="separator">|</span>';
+        // Repetimos os itens 2x para dar sensação de continuidade se for pouco texto
+        // ou apenas juntamos se for muito. Vamos apenas juntar.
+        const fullText = items.join(separatorHtml);
 
-        // --- Inicialização ---
-        
-        // Iniciar Clock & Rotação do Tempo
-        updateClock();
-        rotateWeather(); 
-        setInterval(updateClock, 1000);
-        setInterval(rotateWeather, ROTATION_INTERVAL); 
+        marqueeElement.innerHTML = fullText;
 
-        // --- Refresh Logic ---
+        // Reinicia animação
+        marqueeElement.style.animation = 'none';
+        marqueeElement.offsetHeight; /* trigger reflow */
+        marqueeElement.style.animation = `scrollLeft ${TEMPO_ROLAGEM}s linear infinite`;
+    }
 
-        // 1. Iframe Refresh (Soft Refresh) - (default 5 mins)
-        setInterval(() => {
-            console.log("Atualizando Iframe (Soft Refresh)...");
-            iframeEl.src = iframeEl.src;
-        }, refreshInterval);
+    // Inicialização
+    fetchNews(); 
+    // Verifica a cada 3 SEGUNDOS (Simultaneidade)
+    setInterval(fetchNews, 3000); 
 
-        // 2. Window Hard Refresh (Hard Refresh) - Fixo em 24 horas
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        setTimeout(() => {
-            console.log("Executando Atualização Forçada Diária...");
-            window.location.reload(true);
-        }, twentyFourHours);
+    // --- Reloads ---
+    setInterval(()=>{ document.getElementById('slide-frame').src = slideUrl; }, refreshInterval);
+    setTimeout(()=>{ window.location.reload(true); }, 86400000);
 
-    </script>
+</script>
 </body>
 </html>

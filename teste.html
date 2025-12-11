@@ -3,30 +3,33 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Eleva Informações - Atualização Rápida</title>
+<title>Eleva TV - Slide Ajustado</title>
 <style>
     /* Reset */
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* Fundo preto ajuda caso o slide fique com bordas laterais ao redimensionar */
     html, body { width: 100%; height: 100%; background: #000; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
 
-    /* IFRAME (apresentação) */
+    /* --- IFRAME (apresentação) --- */
     .presentation-frame {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        /* AQUI ESTÁ O AJUSTE: */
+        height: 87%; /* Reduzi de 100% para 87% para não bater na barra */
         border: 0;
         z-index: 1;
     }
 
-    /* BARRA LARANJA */
+    /* --- BARRA LARANJA --- */
     .info-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 13%; 
+        height: 13%; /* Ocupa exatamente o espaço que tiramos do slide */
         min-height: 80px;
         z-index: 20;
         background-color: #ff8e03; 
@@ -60,9 +63,7 @@
     .day-line { font-size: 3.5vh; font-weight: 800; line-height: 1.1; text-transform: capitalize; }
     .date-line { font-size: 2vh; font-weight: 400; opacity: 0.9; }
 
-    /* ===========================
-       CENTRO (LETREIRO)
-       =========================== */
+    /* CENTRO (LETREIRO) */
     .marquee-container {
         flex: 1; 
         height: 100%;
@@ -81,10 +82,8 @@
         color: #fff;
         font-size: 3.2vh; 
         font-weight: 600;
-        /* Animação controlada via JS */
     }
 
-    /* Separador | */
     .separator {
         color: rgba(255,255,255,0.6);
         margin: 0 25px; 
@@ -160,7 +159,7 @@
     // ==========================================
     // CONFIGURAÇÕES
     // ==========================================
-    const TEMPO_ROLAGEM = 25; // Segundos para atravessar a tela
+    const TEMPO_ROLAGEM = 25; 
     const SHEET_ID = '1CZ0NkBomU3prL1EmSk_baavwJRQySmjzRTf0HdLPMvo'; 
     // ==========================================
 
@@ -219,13 +218,11 @@
     // --- 3. GOOGLE SHEETS NEWS (Smart Refresh) ---
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
     const marqueeElement = document.getElementById('marquee-text');
-    let lastFetchedContent = ""; // Armazena o último conteúdo para comparar
+    let lastFetchedContent = "";
 
     async function fetchNews() {
         try {
-            // Adiciona um timestamp para evitar cache do navegador e forçar nova leitura
             const noCacheUrl = `${SHEET_URL}&t=${new Date().getTime()}`;
-            
             const response = await fetch(noCacheUrl);
             const text = await response.text();
             
@@ -239,42 +236,26 @@
                 if(line.length > 0) newsItems.push(line);
             }
 
-            // Se a planilha estiver vazia, usa fallback
             if(newsItems.length === 0) newsItems.push("Bem-vindo à Escola Eleva");
-
-            // Cria a string única para comparação
-            // Usamos um caractere especial improvável de ser digitado para junção limpa na comparação
             const newContentString = newsItems.join("###SEP###");
 
-            // SÓ ATUALIZA SE O CONTEÚDO MUDOU
             if (newContentString !== lastFetchedContent) {
-                console.log("Notícias atualizadas!");
                 lastFetchedContent = newContentString;
                 updateMarquee(newsItems);
             }
-
-        } catch (error) {
-            console.error("Erro planilha:", error);
-        }
+        } catch (error) { console.error("Erro planilha:", error); }
     }
 
     function updateMarquee(items) {
         const separatorHtml = '<span class="separator">|</span>';
-        // Repetimos os itens 2x para dar sensação de continuidade se for pouco texto
-        // ou apenas juntamos se for muito. Vamos apenas juntar.
         const fullText = items.join(separatorHtml);
-
         marqueeElement.innerHTML = fullText;
-
-        // Reinicia animação
         marqueeElement.style.animation = 'none';
-        marqueeElement.offsetHeight; /* trigger reflow */
+        marqueeElement.offsetHeight; 
         marqueeElement.style.animation = `scrollLeft ${TEMPO_ROLAGEM}s linear infinite`;
     }
 
-    // Inicialização
     fetchNews(); 
-    // Verifica a cada 3 SEGUNDOS (Simultaneidade)
     setInterval(fetchNews, 3000); 
 
     // --- Reloads ---

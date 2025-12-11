@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosk Presentation Display - BR</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000;
+        }
+
+        /* 1. The Presentation Layer */
+        .presentation-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+        }
+
+        /* 2. The Overlay Bar */
+        .info-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10%;
+            z-index: 10;
+            
+            /* COR AZUL ESCURO */
+            background-color: rgba(18, 55, 107, 0.9); 
+            color: #e0e0e0;
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- DATE SETTINGS (LEFT) --- */
+        .date-display {
+            flex: 1;
+            text-align: left;
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 150px; 
+        }
+        
+        .day-line {
+            font-size: 3.5vh;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .date-line {
+            font-size: 2.5vh;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        /* --- CENTER WIDGET (3x Weather) --- */
+        .center-widget {
+            flex: 4; 
+            display: grid;
+            /* GRID com 3 colunas de tamanho igual */
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 1rem; 
+            align-items: center;
+            height: 100%;
+            padding: 0 1rem;
+        }
+
+        .weather-info {
+            text-align: center;
+            font-family: "Segoe UI", sans-serif;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            padding: 0 5px;
+        }
+        
+        .weather-city {
+            font-size: 2.2vh;
+            font-weight: 600;
+            line-height: 1.2;
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+
+        .weather-temp {
+            font-size: 3.5vh; 
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .weather-condition {
+            font-size: 1.8vh; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+
+        /* Ocultar o QR/Música */
+        .qr-container {
+             display: none !important;
+        }
+
+        /* --- TIME SETTINGS (RIGHT) --- */
+        .time-display {
+            flex: 1;
+            text-align: right;
+            font-family: "Segoe UI", sans-serif; 
+            font-size: 5vh;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            color: #e0e0e0; 
+            min-width: 150px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <iframe 
+        id="slide-frame"
+        class="presentation-frame"
+        src="" 
+        frameborder="0" 
+        allowfullscreen="true" 
+        mozallowfullscreen="true" 
+        webkitallowfullscreen="true">
+    </iframe>
+
+    <div class="info-bar">
+        <div class="date-display">
+            <div id="day-line" class="day-line">Carregando...</div>
+            <div id="date-line" class="date-line">...</div>
+        </div>
+        
+        <div class="center-widget">
+            <div class="weather-info" id="city-0">
+                <div class="weather-city">Carregando...</div>
+                <div class="weather-temp">--°C</div>
+                <div class="weather-condition">Previsão do Tempo</div>
+            </div>
+             <div class="weather-info" id="city-1">
+                <div class="weather-city">Carregando...</div>
+                <div class="weather-temp">--°C</div>
+                <div class="weather-condition">Previsão do Tempo</div>
+            </div>
+             <div class="weather-info" id="city-2">
+                <div class="weather-city">Carregando...</div>
+                <div class="weather-temp">--°C</div>
+                <div class="weather-condition">Previsão do Tempo</div>
+            </div>
+            
+            <div class="qr-container" title="Música Desativada"></div>
+        </div>
+        
+        <div class="time-display" id="time-container">
+            --:--:--
+        </div>
+    </div>
+
+    <script>
+        // --- Configuração & URL Parsing ---
+        function getQueryParam(param, defaultValue) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param) || defaultValue;
+        }
+
+        // 1. Obter Configurações da URL
+        // Valor padrão usa um link de embed que inclui o seu ID
+        const defaultSlideUrl = `https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=8000`;
+        
+        // Use o parâmetro 'embed' para substituir o link (ex: link do Canva)
+        const slideUrl = getQueryParam('embed', defaultSlideUrl);
+
+        const refreshInterval = parseInt(getQueryParam('refresh', '300000'), 10); // Padrão 5 mins
+        const enableMusic = false; 
+
+        // 2. Inicializar Slide Iframe
+        const iframeEl = document.getElementById('slide-frame');
+        iframeEl.src = slideUrl;
+
+
+        // --- Lista de Cidades para Rotação ---
+        const CITIES = [
+            { name: "Rio de Janeiro – RJ", lat: -22.9068, lon: -43.1729, tz: "America/Sao_Paulo" },
+            { name: "Recife – PE", lat: -8.0476, lon: -34.8770, tz: "America/Recife" },
+            { name: "Salvador – BA", lat: -12.9777, lon: -38.5016, tz: "America/Bahia" },
+            { name: "Brasília – DF", lat: -15.8267, lon: -47.9218, tz: "America/Sao_Paulo" }, 
+            { name: "São Paulo – SP", lat: -23.5505, lon: -46.6333, tz: "America/Sao_Paulo" },
+            { name: "Vila Velha – ES", lat: -20.3478, lon: -40.2949, tz: "America/Sao_Paulo" }
+        ];
+        let currentCityStartIndex = 0; 
+        const ROTATION_INTERVAL = 12000; // Troca o grupo de 3 cidades a cada 12 segundos
+
+        // --- Clock Logic (Hora de Brasília) ---
+        function updateClock() {
+            const TIMEZONE = 'America/Sao_Paulo';
+            const now = new Date();
+            
+            const dayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: TIMEZONE }).format(now);
+            const dateRest = new Intl.DateTimeFormat('pt-BR', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: TIMEZONE 
+            }).format(now);
+            const timeString = now.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false, 
+                timeZone: TIMEZONE
+            });
+
+            document.getElementById('day-line').textContent = dayName;
+            document.getElementById('date-line').textContent = dateRest;
+            document.getElementById('time-container').textContent = timeString;
+        }
+
+        // --- Weather Function (Open-Meteo) ---
+        // Funções auxiliares para preencher o HTML
+        function updateWeatherUI(index, city, temp, desc) {
+            const container = document.getElementById(`city-${index}`);
+            if (container) {
+                container.querySelector('.weather-city').textContent = city;
+                container.querySelector('.weather-temp').textContent = temp;
+                container.querySelector('.weather-condition').textContent = desc;
+            }
+        }
+        
+        // Mapeamento de códigos de clima (WMO Weather Codes)
+        const weatherCodeMap = {
+            0: "Céu Limpo", 1: "Principalmente Limpo", 2: "Parcialmente Nublado", 3: "Nublado",
+            45: "Nevoeiro", 48: "Nevoeiro com Gelo",
+            51: "Chuvisco Leve", 53: "Chuvisco Moderado", 55: "Chuvisco Denso",
+            61: "Chuva Leve", 63: "Chuva Moderada", 65: "Chuva Forte",
+            80: "Pancadas de Chuva Leves", 81: "Pancadas de Chuva Moderadas", 82: "Pancadas de Chuva Violentas",
+            95: "Tempestade", 96: "Tempestade com Granizo", 99: "Tempestade com Granizo Forte",
+            999: "Dados indisponíveis"
+        };
+
+        async function fetchAndUpdateCity(city, uiIndex) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&forecast_days=1&timezone=${city.tz}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                const weather = data.current_weather;
+                
+                const tempC = weather.temperature;
+                const tempText = `${Math.round(tempC)}°C`;
+                const descText = weatherCodeMap[weather.weathercode] || "Dados indisponíveis";
+
+                updateWeatherUI(uiIndex, city.name, tempText, descText);
+
+            } catch (error) {
+                console.error(`Falha ao buscar o clima para ${city.name}:`, error);
+                updateWeatherUI(uiIndex, city.name, '--°C', 'Erro de API/Rede');
+            }
+        }
+        
+        // --- Lógica de Rotação de 3 Cidades ---
+        function rotateWeather() {
+            // As três cidades atuais a serem exibidas
+            const citiesToShow = [
+                CITIES[currentCityStartIndex % CITIES.length],
+                CITIES[(currentCityStartIndex + 1) % CITIES.length],
+                CITIES[(currentCityStartIndex + 2) % CITIES.length]
+            ];
+            
+            // Buscar e atualizar as 3 cidades
+            citiesToShow.forEach((city, index) => {
+                // Rotação só deve ocorrer se houver mais de 3 cidades.
+                if (city) {
+                    fetchAndUpdateCity(city, index);
+                }
+            });
+            
+            // Incrementa o índice inicial para o próximo grupo de 3
+            currentCityStartIndex = (currentCityStartIndex + 3) % CITIES.length;
+        }
+
+
+        // --- Inicialização ---
+        
+        // Iniciar Clock & Rotação do Tempo
+        updateClock();
+        rotateWeather(); 
+        setInterval(updateClock, 1000);
+        setInterval(rotateWeather, ROTATION_INTERVAL); 
+
+        // --- Refresh Logic ---
+
+        // 1. Iframe Refresh (Soft Refresh) - (default 5 mins)
+        setInterval(() => {
+            console.log("Atualizando Iframe (Soft Refresh)...");
+            iframeEl.src = iframeEl.src;
+        }, refreshInterval);
+
+        // 2. Window Hard Refresh (Hard Refresh) - Fixo em 24 horas
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        setTimeout(() => {
+            console.log("Executando Atualização Forçada Diária...");
+            window.location.reload(true);
+        }, twentyFourHours);
+
+    </script>
+</body>
+</html>
