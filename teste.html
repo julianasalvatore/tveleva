@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiosk Presentation Display - BR</title>
+    <title>Eleva Informações - Rio</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -39,28 +39,54 @@
             width: 100%;
             height: 10%;
             z-index: 10;
-            
-            /* COR AZUL ESCURO */
-            background-color: rgba(18, 55, 107, 0.9); 
+
+            /* Laranja Eleva */
+            background-color: rgba(255, 142, 3, 0.993); 
             color: #e0e0e0;
-            
+
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 2rem;
-            
+
             box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- LOGO AREA --- */
+        .logo-area {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-right: 20px;
+            flex: 0 0 auto;
+        }
+
+        /* FUNDO BRANCO ATRÁS DA LOGO */
+        .logo-bg {
+            background: #ffffff;
+            padding: 6px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            height: 85%;
+        }
+
+        .logo-bg img {
+            max-height: 100%;
+            width: auto;
+            object-fit: contain;
         }
 
         /* --- DATE SETTINGS (LEFT) --- */
         .date-display {
             flex: 1;
             text-align: left;
-            font-family: "Segoe UI", sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
             min-width: 150px; 
+            border-left: 1px solid rgba(255,255,255,0.2);
+            padding-left: 20px;
         }
         
         .day-line {
@@ -75,13 +101,11 @@
             opacity: 0.9;
         }
 
-        /* --- CENTER WIDGET (3x Weather) --- */
+        /* --- CENTER WIDGET (Single Weather) --- */
         .center-widget {
-            flex: 4; 
-            display: grid;
-            /* GRID com 3 colunas de tamanho igual */
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 1rem; 
+            flex: 3; 
+            display: flex; 
+            justify-content: center;
             align-items: center;
             height: 100%;
             padding: 0 1rem;
@@ -89,46 +113,37 @@
 
         .weather-info {
             text-align: center;
-            font-family: "Segoe UI", sans-serif;
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
-            padding: 0 5px;
+            padding: 0 10px;
+            transform: scale(1.1);
         }
         
         .weather-city {
             font-size: 2.2vh;
             font-weight: 600;
             line-height: 1.2;
-            overflow: hidden; 
-            text-overflow: ellipsis;
         }
 
         .weather-temp {
-            font-size: 3.5vh; 
+            font-size: 4vh;
             font-weight: bold;
             line-height: 1;
+            margin: 2px 0;
         }
 
         .weather-condition {
             font-size: 1.8vh; 
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            opacity: 0.8;
-            overflow: hidden; 
-            text-overflow: ellipsis;
-        }
-
-        /* Ocultar o QR/Música */
-        .qr-container {
-             display: none !important;
+            opacity: 0.9;
         }
 
         /* --- TIME SETTINGS (RIGHT) --- */
         .time-display {
             flex: 1;
             text-align: right;
-            font-family: "Segoe UI", sans-serif; 
             font-size: 5vh;
             font-weight: 500;
             font-variant-numeric: tabular-nums;
@@ -152,29 +167,24 @@
     </iframe>
 
     <div class="info-bar">
+        
+        <div class="logo-area">
+            <div class="logo-bg">
+                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school10/files/2022-09/logo_escola_eleva.png" alt="Logo" id="custom-logo">
+            </div>
+        </div>
+
         <div class="date-display">
             <div id="day-line" class="day-line">Carregando...</div>
             <div id="date-line" class="date-line">...</div>
         </div>
         
         <div class="center-widget">
-            <div class="weather-info" id="city-0">
-                <div class="weather-city">Carregando...</div>
+            <div class="weather-info" id="city-rio">
+                <div class="weather-city">Rio de Janeiro – RJ</div>
                 <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
+                <div class="weather-condition">Carregando...</div>
             </div>
-             <div class="weather-info" id="city-1">
-                <div class="weather-city">Carregando...</div>
-                <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
-            </div>
-             <div class="weather-info" id="city-2">
-                <div class="weather-city">Carregando...</div>
-                <div class="weather-temp">--°C</div>
-                <div class="weather-condition">Previsão do Tempo</div>
-            </div>
-            
-            <div class="qr-container" title="Música Desativada"></div>
         </div>
         
         <div class="time-display" id="time-container">
@@ -183,40 +193,18 @@
     </div>
 
     <script>
-        // --- Configuração & URL Parsing ---
         function getQueryParam(param, defaultValue) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param) || defaultValue;
         }
 
-        // 1. Obter Configurações da URL
-        // Valor padrão usa um link de embed que inclui o seu ID
-        const defaultSlideUrl = `https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=8000`;
-        
-        // Use o parâmetro 'embed' para substituir o link (ex: link do Canva)
+        const defaultSlideUrl = `https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=60000`;
         const slideUrl = getQueryParam('embed', defaultSlideUrl);
+        const refreshInterval = parseInt(getQueryParam('refresh', '3600000'), 10);
 
-        const refreshInterval = parseInt(getQueryParam('refresh', '300000'), 10); // Padrão 5 mins
-        const enableMusic = false; 
-
-        // 2. Inicializar Slide Iframe
         const iframeEl = document.getElementById('slide-frame');
         iframeEl.src = slideUrl;
 
-
-        // --- Lista de Cidades para Rotação ---
-        const CITIES = [
-            { name: "Rio de Janeiro – RJ", lat: -22.9068, lon: -43.1729, tz: "America/Sao_Paulo" },
-            { name: "Recife – PE", lat: -8.0476, lon: -34.8770, tz: "America/Recife" },
-            { name: "Salvador – BA", lat: -12.9777, lon: -38.5016, tz: "America/Bahia" },
-            { name: "Brasília – DF", lat: -15.8267, lon: -47.9218, tz: "America/Sao_Paulo" }, 
-            { name: "São Paulo – SP", lat: -23.5505, lon: -46.6333, tz: "America/Sao_Paulo" },
-            { name: "Vila Velha – ES", lat: -20.3478, lon: -40.2949, tz: "America/Sao_Paulo" }
-        ];
-        let currentCityStartIndex = 0; 
-        const ROTATION_INTERVAL = 12000; // Troca o grupo de 3 cidades a cada 12 segundos
-
-        // --- Clock Logic (Hora de Brasília) ---
         function updateClock() {
             const TIMEZONE = 'America/Sao_Paulo';
             const now = new Date();
@@ -241,95 +229,56 @@
             document.getElementById('time-container').textContent = timeString;
         }
 
-        // --- Weather Function (Open-Meteo) ---
-        // Funções auxiliares para preencher o HTML
-        function updateWeatherUI(index, city, temp, desc) {
-            const container = document.getElementById(`city-${index}`);
-            if (container) {
-                container.querySelector('.weather-city').textContent = city;
-                container.querySelector('.weather-temp').textContent = temp;
-                container.querySelector('.weather-condition').textContent = desc;
-            }
-        }
-        
-        // Mapeamento de códigos de clima (WMO Weather Codes)
+        const RIO_DATA = { lat: -22.9068, lon: -43.1729, tz: "America/Sao_Paulo" };
+
         const weatherCodeMap = {
             0: "Céu Limpo", 1: "Principalmente Limpo", 2: "Parcialmente Nublado", 3: "Nublado",
             45: "Nevoeiro", 48: "Nevoeiro com Gelo",
             51: "Chuvisco Leve", 53: "Chuvisco Moderado", 55: "Chuvisco Denso",
             61: "Chuva Leve", 63: "Chuva Moderada", 65: "Chuva Forte",
-            80: "Pancadas de Chuva Leves", 81: "Pancadas de Chuva Moderadas", 82: "Pancadas de Chuva Violentas",
-            95: "Tempestade", 96: "Tempestade com Granizo", 99: "Tempestade com Granizo Forte",
-            999: "Dados indisponíveis"
+            80: "Pancadas de Chuva", 81: "Chuva Moderada", 82: "Chuva Forte",
+            95: "Tempestade", 96: "Tempestade/Granizo", 99: "Tempestade Severa"
         };
 
-        async function fetchAndUpdateCity(city, uiIndex) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&forecast_days=1&timezone=${city.tz}`;
+        function updateWeatherUI(temp, desc) {
+            const container = document.getElementById('city-rio');
+            container.querySelector('.weather-temp').textContent = temp;
+            container.querySelector('.weather-condition').textContent = desc;
+        }
+
+        async function fetchRioWeather() {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${RIO_DATA.lat}&longitude=${RIO_DATA.lon}&current_weather=true&forecast_days=1&timezone=${RIO_DATA.tz}`;
             
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
                 const data = await response.json();
-                
                 const weather = data.current_weather;
                 
-                const tempC = weather.temperature;
-                const tempText = `${Math.round(tempC)}°C`;
-                const descText = weatherCodeMap[weather.weathercode] || "Dados indisponíveis";
+                const tempText = `${Math.round(weather.temperature)}°C`;
+                const descText = weatherCodeMap[weather.weathercode] || "Tempo Aberto";
 
-                updateWeatherUI(uiIndex, city.name, tempText, descText);
+                updateWeatherUI(tempText, descText);
 
             } catch (error) {
-                console.error(`Falha ao buscar o clima para ${city.name}:`, error);
-                updateWeatherUI(uiIndex, city.name, '--°C', 'Erro de API/Rede');
+                console.error(`Erro ao buscar clima:`, error);
+                setTimeout(fetchRioWeather, 60000);
             }
         }
-        
-        // --- Lógica de Rotação de 3 Cidades ---
-        function rotateWeather() {
-            // As três cidades atuais a serem exibidas
-            const citiesToShow = [
-                CITIES[currentCityStartIndex % CITIES.length],
-                CITIES[(currentCityStartIndex + 1) % CITIES.length],
-                CITIES[(currentCityStartIndex + 2) % CITIES.length]
-            ];
-            
-            // Buscar e atualizar as 3 cidades
-            citiesToShow.forEach((city, index) => {
-                // Rotação só deve ocorrer se houver mais de 3 cidades.
-                if (city) {
-                    fetchAndUpdateCity(city, index);
-                }
-            });
-            
-            // Incrementa o índice inicial para o próximo grupo de 3
-            currentCityStartIndex = (currentCityStartIndex + 3) % CITIES.length;
-        }
 
-
-        // --- Inicialização ---
-        
-        // Iniciar Clock & Rotação do Tempo
         updateClock();
-        rotateWeather(); 
+        fetchRioWeather();
         setInterval(updateClock, 1000);
-        setInterval(rotateWeather, ROTATION_INTERVAL); 
+        setInterval(fetchRioWeather, 600000);
 
-        // --- Refresh Logic ---
-
-        // 1. Iframe Refresh (Soft Refresh) - (default 5 mins)
         setInterval(() => {
-            console.log("Atualizando Iframe (Soft Refresh)...");
             iframeEl.src = iframeEl.src;
         }, refreshInterval);
 
-        // 2. Window Hard Refresh (Hard Refresh) - Fixo em 24 horas
-        const twentyFourHours = 24 * 60 * 60 * 1000;
         setTimeout(() => {
-            console.log("Executando Atualização Forçada Diária...");
             window.location.reload(true);
-        }, twentyFourHours);
-
+        }, 86400000);
     </script>
 </body>
 </html>
