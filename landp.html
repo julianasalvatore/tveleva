@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Leonardo da Vinci News</title>
+<title>Land School News</title>
 <style>
     /* Reset e Base */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,7 +37,7 @@
         min-height: 90px;
         z-index: 999; /* Garante que fique SOBRE o slide */
         
-        background-color: #122469; /* Azul Escuro Batutinhas */
+        background-color: #0b1c5a; /* Verde Land/Gurilandia */
         color: #fff;
         
         display: flex;
@@ -54,7 +54,7 @@
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #122469; 
+        background-color: #100b5a; 
         padding-right: 20px;
         z-index: 1000;
     }
@@ -141,7 +141,7 @@
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #122469; 
+        background-color: #0b1c5a; /* Fundo sólido */
         padding-left: 20px;
         z-index: 1000;
     }
@@ -210,7 +210,7 @@
         
         <div class="left-group">
             <div class="logo-box">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxbpKAoTmq6aaDqjovOZQQw8VKnS5oEhOLzw&s" alt="Logo Eleva">
+                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school101/files/2024-03/31653_marca_guri_azul_vertical_3.png" alt="Logo">
             </div>
             <div class="vertical-divider"></div>
             <div class="date-display">
@@ -232,7 +232,8 @@
                 </div>
                 <div class="weather-text">
                     <div class="weather-temp" id="weather-temp">--°C</div>
-                    <div class="weather-city">Vitória – ES</div> </div>
+                    <div class="weather-city">Salvador – BA</div>
+                </div>
             </div>
             <div class="vertical-divider"></div>
             <div class="time-display" id="time-container">
@@ -246,8 +247,10 @@
         // ==========================================
         // CONFIGURAÇÕES GERAIS
         // ==========================================
-        const SHEET_ID = '1SPhDGL0LrZbjxDlOiTlniIOVCIREVv2z'; 
-        const TEMPO_ROLAGEM = 50; 
+        
+        // ID DA PLANILHA (Land School)
+        const SHEET_ID = '1mvBjvJsXZNtePRypUXrMF-CX36Fsgwse';
+        const TEMPO_ROLAGEM = 35; 
         
         // ==========================================
         // 1. SLIDES (Google Presentation)
@@ -257,7 +260,9 @@
             return urlParams.get(param) || defaultValue;
         }
 
-        const defaultSlideUrl = "https://docs.google.com/presentation/d/1Unm4ICUbkwN4bnzCnDRsuK2Vx1mX7E7d/embed?start=true&loop=true&rm=minimal&delayms=60000";
+        // SLIDE URL (ID: 1Iyf8uqdybm6-px8vZaTD50weJUfpyqEW)
+        const defaultSlideUrl = "https://docs.google.com/presentation/d/1-up52stUKy2zAgLo96c36cKeYDCK1_RP/embed?start=true&loop=true&rm=minimal&delayms=10000";
+    
         const slideUrl = getQueryParam('embed', defaultSlideUrl);
         const refreshInterval = parseInt(getQueryParam('refresh', '3600000'), 10);
 
@@ -295,12 +300,11 @@
 
 
         // ==========================================
-        // 3. CLIMA (OpenWeather - VITÓRIA, ES)
+        // 3. CLIMA (OpenWeather - Salvador)
         // ==========================================
         async function fetchWeather() {
             const apiKey = "ff0a9d4e6f632ea18d6ce175c676d736"; 
-            // URL atualizada para Vitoria, BR
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=Vitoria,BR&appid=${apiKey}&units=metric&lang=pt_br`;
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=Salvador&appid=${apiKey}&units=metric&lang=pt_br`;
 
             try {
                 const response = await fetch(url);
@@ -318,7 +322,8 @@
             }
         }
         fetchWeather();
-        setInterval(fetchWeather, 1000); // Atualiza a cada 1 min
+        // INTERVALO AJUSTADO PARA 60s PARA EVITAR BLOQUEIO
+        setInterval(fetchWeather, 1000);  
 
 
         // ==========================================
@@ -344,7 +349,7 @@
                     if(line.length > 0) newsItems.push(line);
                 }
 
-                if(newsItems.length === 0) newsItems.push("Bem-vindo à Os Batutinhas News");
+                if(newsItems.length === 0) newsItems.push("Bem-vindo à Land School");
 
                 const newContentHtml = newsItems.join('<span class="separator">|</span>');
 
@@ -392,7 +397,7 @@
     }
 
     window.addEventListener("load", () => {
-        openFullScreen();
+        document.body.addEventListener('click', openFullScreen);
         setTimeout(openFullScreen, 2000);
     });
     </script>
