@@ -1,0 +1,32 @@
+/* Tudo o que é padrão para todas as unidades */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background-color: #000; overflow: hidden; }
+
+.presentation-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; }
+
+.info-bar {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 13%; min-height: 95px;
+    z-index: 999; color: #fff; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; box-shadow: 0 -4px 30px rgba(0,0,0,0.5); 
+}
+
+/* O filtro do ícone branco agora é global */
+.weather-icon-box img {
+    width: 55px; height: 55px; filter: brightness(0) invert(1); margin-right: 5px;
+}
+
+.marquee-container {
+    flex: 1; height: 100%; position: relative; overflow: hidden; display: flex; align-items: center;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.marquee-content {
+    position: absolute; white-space: nowrap; display: inline-block; will-change: transform;
+    font-size: 3.5vh; font-weight: 600; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes scrollLeft {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+}

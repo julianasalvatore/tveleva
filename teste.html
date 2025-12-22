@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Eleva News - Premium Edition</title>
+<title>Eleva News - Edição Premium</title>
 <style>
     /* Reset e Base */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,7 +16,7 @@
         overflow: hidden; 
     }
 
-    /* 1. APRESENTAÇÃO (SLIDES) */
+    /* 1. APRESENTAÇÃO (SLIDES NO FUNDO) */
     .presentation-frame {
         position: absolute;
         top: 0;
@@ -27,7 +27,7 @@
         z-index: 1;
     }
 
-    /* 2. BARRA DE INFORMAÇÕES (OVERLAY) */
+    /* 2. BARRA DE INFORMAÇÕES (SOBREPOSTA) */
     .info-bar {
         position: absolute;
         bottom: 0;
@@ -45,7 +45,7 @@
         box-shadow: 0 -4px 30px rgba(0,0,0,0.5); 
     }
 
-    /* --- GRUPO ESQUERDA --- */
+    /* --- GRUPO ESQUERDA (Logo e Data) --- */
     .left-group {
         display: flex;
         align-items: center;
@@ -100,7 +100,7 @@
         opacity: 0.9;
     }
 
-    /* --- CENTRO (MARQUEE DINÂMICO) --- */
+    /* --- CENTRO (LETREIRO DE NOTÍCIAS) --- */
     .marquee-container {
         flex: 1;
         height: 100%;
@@ -108,7 +108,7 @@
         overflow: hidden;
         display: flex;
         align-items: center;
-        /* Degradê suave nas pontas */
+        /* Degradê suave nas pontas para o texto não sumir bruscamente */
         mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
     }
@@ -131,7 +131,7 @@
         font-weight: 300;
     }
 
-    /* --- GRUPO DIREITA --- */
+    /* --- GRUPO DIREITA (Clima e Hora) --- */
     .right-group {
         display: flex;
         align-items: center;
@@ -151,7 +151,8 @@
     .weather-icon-box img {
         width: 55px;
         height: 55px;
-        filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+        /* AJUSTE SOLICITADO: Torna o ícone do sol/tempo totalmente BRANCO */
+        filter: brightness(0) invert(1);
         margin-right: 5px;
     }
 
@@ -189,7 +190,7 @@
     <div class="info-bar">
         <div class="left-group">
             <div class="logo-box">
-                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school10/files/2022-09/logo_escola_eleva.png" alt="Logo">
+                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school10/files/2022-09/logo_escola_eleva.png" alt="Logo Eleva">
             </div>
             <div class="vertical-divider"></div>
             <div class="date-display">
@@ -205,7 +206,7 @@
         <div class="right-group">
             <div class="weather-container">
                 <div class="weather-icon-box">
-                    <img id="weather-icon-img" src="" alt="">
+                    <img id="weather-icon-img" src="" alt="Clima">
                 </div>
                 <div class="weather-text">
                     <div class="weather-temp" id="weather-temp">--°C</div>
@@ -218,15 +219,15 @@
     </div>
 
     <script>
-        /** CONFIGURAÇÕES **/
+        /** 1. CONFIGURAÇÕES **/
         const SHEET_ID = '1CZ0NkBomU3prL1EmSk_baavwJRQySmjzRTf0HdLPMvo'; 
         const SLIDE_URL = "https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=10000";
-        const VELOCIDADE_PX_SEG = 100; // Constante de velocidade para leitura confortável
+        const VELOCIDADE_PX_SEG = 110; // Velocidade de rolagem (quanto maior, mais rápido)
 
-        /** 1. CARREGAR SLIDES **/
+        /** 2. CARREGAR SLIDES **/
         document.getElementById('slide-frame').src = SLIDE_URL;
 
-        /** 2. RELÓGIO E DATA **/
+        /** 3. RELÓGIO E DATA (PADRÃO BRASIL) **/
         function updateClock() {
             const now = new Date();
             const locale = 'pt-BR';
@@ -243,7 +244,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        /** 3. CLIMA (ATUALIZAÇÃO A CADA 10 MIN) **/
+        /** 4. CLIMA (OTIMIZADO) **/
         async function fetchWeather() {
             const apiKey = "ff0a9d4e6f632ea18d6ce175c676d736"; 
             const url = `https://api.openweathermap.org/data/2.5/weather?q=Rio de Janeiro&appid=${apiKey}&units=metric&lang=pt_br`;
@@ -252,12 +253,12 @@
                 const data = await response.json();
                 document.getElementById('weather-temp').textContent = `${Math.round(data.main.temp)}°C`;
                 document.getElementById('weather-icon-img').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-            } catch (e) { console.error("Erro clima"); }
+            } catch (e) { console.error("Erro ao buscar clima"); }
         }
         fetchWeather();
-        setInterval(fetchWeather, 600000); 
+        setInterval(fetchWeather, 600000); // Atualiza a cada 10 minutos para evitar banimento de API
 
-        /** 4. NOTÍCIAS (VELOCIDADE DINÂMICA) **/
+        /** 5. NOTÍCIAS COM CÁLCULO DE VELOCIDADE DINÂMICO **/
         const marqueeElement = document.getElementById('marquee-text');
         let lastNewsSignature = "";
 
@@ -281,35 +282,39 @@
                     lastNewsSignature = contentHtml;
                     marqueeElement.innerHTML = contentHtml;
                     
-                    // Recalcular animação
+                    // Aguarda renderização para medir largura e definir tempo da animação
                     setTimeout(() => {
                         const textoLargura = marqueeElement.offsetWidth;
                         const telaLargura = window.innerWidth;
                         const duracao = (textoLargura + telaLargura) / VELOCIDADE_PX_SEG;
                         
                         marqueeElement.style.animation = 'none';
-                        marqueeElement.offsetHeight; /* trigger reflow */
+                        marqueeElement.offsetHeight; /* Trigger reflow */
                         marqueeElement.style.animation = `scrollLeft ${duracao}s linear infinite`;
                     }, 200);
                 }
-            } catch (e) { console.error("Erro notícias"); }
+            } catch (e) { console.error("Erro ao carregar notícias"); }
         }
         fetchNews();
-        setInterval(fetchNews, 30000); // Verifica novos textos a cada 30 segundos
+        setInterval(fetchNews, 60000); // Verifica a planilha por atualizações a cada 1 minuto
 
-        /** 5. ESTABILIDADE E FULLSCREEN **/
-        // Auto-reload a cada 24 horas para limpar cache/memória
+        /** 6. ESTABILIDADE E TELA CHEIA **/
+        // Recarrega a página inteira uma vez por dia para limpar cache
         setTimeout(() => window.location.reload(true), 86400000);
 
-        function startFullScreen() {
+        function openFullScreen() {
             const doc = document.documentElement;
             if (doc.requestFullscreen) doc.requestFullscreen();
             else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
             else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
         }
 
-        window.addEventListener("click", startFullScreen); // Ativa ao primeiro clique se necessário
-        window.addEventListener("load", () => setTimeout(startFullScreen, 3000));
+        // Tenta entrar em tela cheia após carregar
+        window.addEventListener("load", () => {
+            setTimeout(openFullScreen, 3000);
+        });
+        // Também entra em tela cheia se alguém clicar em qualquer lugar da tela
+        document.body.addEventListener("click", openFullScreen);
     </script>
 </body>
 </html>
