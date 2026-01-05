@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Inspired News</title>
+<title>Eleva News - Edição Premium</title>
 <style>
     /* Reset e Base */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,7 +16,7 @@
         overflow: hidden; 
     }
 
-    /* 1. IFRAME (SLIDES) */
+    /* 1. APRESENTAÇÃO (SLIDES NO FUNDO) */
     .presentation-frame {
         position: absolute;
         top: 0;
@@ -27,45 +27,46 @@
         z-index: 1;
     }
 
-    /* 2. BARRA DE INFORMAÇÕES (OVERLAY) */
+    /* 2. BARRA DE INFORMAÇÕES (SOBREPOSTA) */
     .info-bar {
         position: absolute;
         bottom: 0;
         left: 0;
         width: 100%;
         height: 13%; 
-        min-height: 90px;
+        min-height: 95px;
         z-index: 999; 
-        background-color: #0872eb; 
+        background-color: #ff8e03; /* Laranja Eleva */
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 2rem;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.4); 
+        box-shadow: 0 -4px 30px rgba(0,0,0,0.5); 
     }
 
+    /* --- GRUPO ESQUERDA (Logo e Data) --- */
     .left-group {
         display: flex;
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #0872eb; 
-        padding-right: 20px;
-        z-index: 1000;
+        padding-right: 25px;
+        z-index: 1001;
+        background-color: #ff8e03;
     }
 
     .logo-box {
         background: #ffffff;
         border-radius: 12px;
-        height: 75%; 
+        height: 70%; 
         aspect-ratio: 1 / 1; 
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 5px;
+        padding: 8px;
         margin-right: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     
     .logo-box img {
@@ -76,32 +77,30 @@
 
     .vertical-divider {
         width: 2px;
-        height: 60%;
-        background-color: rgba(255,255,255,0.3);
+        height: 50%;
+        background-color: rgba(255,255,255,0.4);
         margin-right: 20px;
     }
 
     .date-display {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        color: #fff;
+        line-height: 1.2;
     }
     
     .day-line {
         font-size: 3.2vh;
         font-weight: 800;
-        line-height: 1.1;
         text-transform: capitalize;
     }
 
     .date-line {
         font-size: 1.8vh;
         font-weight: 400;
-        opacity: 0.95;
+        opacity: 0.9;
     }
 
-    /* --- CENTRO (Notícias / Marquee) --- */
+    /* --- CENTRO (LETREIRO DE NOTÍCIAS) --- */
     .marquee-container {
         flex: 1;
         height: 100%;
@@ -109,7 +108,7 @@
         overflow: hidden;
         display: flex;
         align-items: center;
-        /* Suaviza as bordas do texto ao entrar/sair */
+        /* Degradê suave nas pontas para o texto não sumir bruscamente */
         mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
     }
@@ -123,23 +122,24 @@
         font-size: 3.5vh; 
         font-weight: 600;
         letter-spacing: 0.5px;
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
     .separator {
         color: rgba(255,255,255,0.5);
-        margin: 0 40px;
+        margin: 0 50px;
         font-weight: 300;
     }
 
+    /* --- GRUPO DIREITA (Clima e Hora) --- */
     .right-group {
         display: flex;
         align-items: center;
         height: 100%;
         flex: 0 0 auto;
-        background-color: #0872eb; 
-        padding-left: 20px;
-        z-index: 1000;
+        padding-left: 25px;
+        z-index: 1001;
+        background-color: #ff8e03;
     }
 
     .weather-container {
@@ -149,14 +149,15 @@
     }
 
     .weather-icon-box img {
-        width: 50px;
-        height: 50px;
+        width: 55px;
+        height: 55px;
+        /* AJUSTE SOLICITADO: Torna o ícone do sol/tempo totalmente BRANCO */
         filter: brightness(0) invert(1);
         margin-right: 5px;
     }
 
     .weather-temp {
-        font-size: 3.5vh;
+        font-size: 3.8vh;
         font-weight: 800;
         line-height: 1;
     }
@@ -164,12 +165,13 @@
     .weather-city {
         font-size: 1.5vh;
         font-weight: 600;
-        opacity: 0.9;
+        opacity: 0.8;
+        text-align: right;
     }
 
     .time-display {
         color: #fff;
-        font-size: 5vh;
+        font-size: 5.5vh;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         margin-left: 20px;
@@ -188,7 +190,7 @@
     <div class="info-bar">
         <div class="left-group">
             <div class="logo-box">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4qKiSKB6nqMH1cAvy1qJZ0Xi2vis3FXWmlw&s" alt="Logo">
+                <img src="https://d24d7vsshzrslo.cloudfront.net/sites/school10/files/2022-09/logo_escola_eleva.png" alt="Logo Eleva">
             </div>
             <div class="vertical-divider"></div>
             <div class="date-display">
@@ -198,17 +200,17 @@
         </div>
         
         <div class="marquee-container">
-            <div id="marquee-text" class="marquee-content">Carregando Notícias...</div>
+            <div id="marquee-text" class="marquee-content">Carregando notícias...</div>
         </div>
         
         <div class="right-group">
             <div class="weather-container">
                 <div class="weather-icon-box">
-                    <img id="weather-icon-img" src="" alt="">
+                    <img id="weather-icon-img" src="" alt="Clima">
                 </div>
                 <div class="weather-text">
                     <div class="weather-temp" id="weather-temp">--°C</div>
-                    <div class="weather-city">Rio de Janeiro – RJ</div>
+                    <div class="weather-city">Rio de Janeiro</div>
                 </div>
             </div>
             <div class="vertical-divider"></div>
@@ -217,37 +219,32 @@
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURAÇÕES GERAIS
-        // ==========================================
-        const SHEET_ID = '1MFHtG8r4pwrY_tA2yFWEC6gZISJgO05e'; 
-        const VELOCIDADE_PX_SEG = 120; // AJUSTE AQUI: quanto menor, mais lento. 100-150 é o ideal.
+        /** 1. CONFIGURAÇÕES **/
+        const SHEET_ID = '1CZ0NkBomU3prL1EmSk_baavwJRQySmjzRTf0HdLPMvo'; 
+        const SLIDE_URL = "https://docs.google.com/presentation/d/1DGoAjEoJlrCjzNGgVUDsi8ehTzpwxPJbt6-muG5Ry3k/embed?start=true&loop=true&rm=minimal&delayms=10000";
+        const VELOCIDADE_PX_SEG = 110; // Velocidade de rolagem (quanto maior, mais rápido)
 
-        // Slides
-        function getQueryParam(param, defaultValue) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param) || defaultValue;
-        }
-        const defaultSlideUrl = "https://docs.google.com/presentation/d/11YYUb321jAQMPU1xfhPQKa35464Iow3N/embed?start=true&loop=true&rm=minimal&delayms=10000";
-        document.getElementById('slide-frame').src = getQueryParam('embed', defaultSlideUrl);
+        /** 2. CARREGAR SLIDES **/
+        document.getElementById('slide-frame').src = SLIDE_URL;
 
-        // Relógio
+        /** 3. RELÓGIO E DATA (PADRÃO BRASIL) **/
         function updateClock() {
             const now = new Date();
-            const TIMEZONE = 'America/Sao_Paulo';
-            let rawDay = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: TIMEZONE }).format(now);
-            const dayFormatted = rawDay.charAt(0).toUpperCase() + rawDay.slice(1);
-            const dateRest = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TIMEZONE }).format(now);
-            const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: TIMEZONE });
+            const locale = 'pt-BR';
+            const tz = 'America/Sao_Paulo';
 
-            document.getElementById('day-line').textContent = dayFormatted;
-            document.getElementById('date-line').textContent = dateRest;
-            document.getElementById('time-container').textContent = timeString;
+            let day = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: tz }).format(now);
+            let date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: tz }).format(now);
+            let time = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: tz });
+
+            document.getElementById('day-line').textContent = day.charAt(0).toUpperCase() + day.slice(1);
+            document.getElementById('date-line').textContent = date;
+            document.getElementById('time-container').textContent = time;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Clima
+        /** 4. CLIMA (OTIMIZADO) **/
         async function fetchWeather() {
             const apiKey = "ff0a9d4e6f632ea18d6ce175c676d736"; 
             const url = `https://api.openweathermap.org/data/2.5/weather?q=Rio de Janeiro&appid=${apiKey}&units=metric&lang=pt_br`;
@@ -256,64 +253,68 @@
                 const data = await response.json();
                 document.getElementById('weather-temp').textContent = `${Math.round(data.main.temp)}°C`;
                 document.getElementById('weather-icon-img').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-            } catch (e) { console.error("Erro clima"); }
+            } catch (e) { console.error("Erro ao buscar clima"); }
         }
         fetchWeather();
-        setInterval(fetchWeather, 600000);
+        setInterval(fetchWeather, 600000); // Atualiza a cada 10 minutos para evitar banimento de API
 
-        // Notícias com Velocidade Dinâmica
+        /** 5. NOTÍCIAS COM CÁLCULO DE VELOCIDADE DINÂMICO **/
         const marqueeElement = document.getElementById('marquee-text');
-        let lastContentSignature = "";
+        let lastNewsSignature = "";
 
         async function fetchNews() {
             try {
                 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&t=${Date.now()}`;
                 const response = await fetch(SHEET_URL);
                 const text = await response.text();
-                const lines = text.split('\n');
-                const newsItems = [];
+                const lines = text.split('\n').slice(1);
+                
+                let newsItems = lines.map(line => {
+                    let clean = line.trim();
+                    if(clean.startsWith('"') && clean.endsWith('"')) clean = clean.substring(1, clean.length - 1);
+                    return clean.replace(/""/g, '"');
+                }).filter(line => line.length > 0);
 
-                for(let i = 1; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    if(line.startsWith('"') && line.endsWith('"')) line = line.substring(1, line.length - 1);
-                    line = line.replace(/""/g, '"');
-                    if(line.length > 0) newsItems.push(line);
-                }
+                if (newsItems.length === 0) newsItems = ["Bem-vindo à Escola Eleva"];
+                const contentHtml = newsItems.join('<span class="separator">|</span>');
 
-                const newContentHtml = newsItems.length > 0 ? newsItems.join('<span class="separator">|</span>') : "Bem-vindo";
-
-                if (newContentHtml !== lastContentSignature) {
-                    lastContentSignature = newContentHtml;
-                    marqueeElement.innerHTML = newContentHtml;
+                if (contentHtml !== lastNewsSignature) {
+                    lastNewsSignature = contentHtml;
+                    marqueeElement.innerHTML = contentHtml;
                     
-                    // CÁLCULO DINÂMICO:
-                    // Espera o navegador renderizar para medir a largura
+                    // Aguarda renderização para medir largura e definir tempo da animação
                     setTimeout(() => {
-                        const larguraTexto = marqueeElement.offsetWidth;
-                        const larguraTela = window.innerWidth;
-                        // O tempo é a distância total (tela + texto) dividida pela velocidade
-                        const duracao = (larguraTexto + larguraTela) / VELOCIDADE_PX_SEG;
+                        const textoLargura = marqueeElement.offsetWidth;
+                        const telaLargura = window.innerWidth;
+                        const duracao = (textoLargura + telaLargura) / VELOCIDADE_PX_SEG;
                         
                         marqueeElement.style.animation = 'none';
-                        marqueeElement.offsetHeight; /* trigger reflow */
+                        marqueeElement.offsetHeight; /* Trigger reflow */
                         marqueeElement.style.animation = `scrollLeft ${duracao}s linear infinite`;
-                    }, 100);
+                    }, 200);
                 }
-            } catch (e) { console.error("Erro notícias"); }
+            } catch (e) { console.error("Erro ao carregar notícias"); }
         }
-        
         fetchNews();
-        setInterval(fetchNews, 10000); // Verifica novos textos a cada 10 segundos
+        setInterval(fetchNews, 60000); // Verifica a planilha por atualizações a cada 1 minuto
 
-        // Fullscreen
+        /** 6. ESTABILIDADE E TELA CHEIA **/
+        // Recarrega a página inteira uma vez por dia para limpar cache
+        setTimeout(() => window.location.reload(true), 86400000);
+
         function openFullScreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) elem.requestFullscreen();
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
         }
+
+        // Tenta entrar em tela cheia após carregar
         window.addEventListener("load", () => {
-            setTimeout(openFullScreen, 2000);
+            setTimeout(openFullScreen, 3000);
         });
+        // Também entra em tela cheia se alguém clicar em qualquer lugar da tela
+        document.body.addEventListener("click", openFullScreen);
     </script>
 </body>
 </html>
