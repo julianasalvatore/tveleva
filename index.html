@@ -228,7 +228,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param) || defaultValue;
         }
-        const defaultSlideUrl = "https://docs.google.com/presentation/d/11YYUb321jAQMPU1xfhPQKa35464Iow3N/embed?start=true&loop=true&rm=minimal&delayms=10000";
+        const defaultSlideUrl = "https://docs.google.com/presentation/d/11YYUb321jAQMPU1xfhPQKa35464Iow3N/embed?start=true&loop=true&rm=minimal&delayms=60000";
         document.getElementById('slide-frame').src = getQueryParam('embed', defaultSlideUrl);
 
         // Relógio
